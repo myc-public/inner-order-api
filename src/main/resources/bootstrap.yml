@@ -1,0 +1,4 @@
+spring:
+  application:
+    #CHANGE_IT app-name
+    name: company-ma-inner-api-socle

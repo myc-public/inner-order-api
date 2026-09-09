@@ -1,0 +1,17 @@
+# Normalisation globale
+* text=auto eol=lf
+
+# Scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Fichiers Windows
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaires
+*.png binary
+*.jpg binary
+*.jar binary
+*.zip binary
+

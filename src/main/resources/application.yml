@@ -1,0 +1,22 @@
+server:
+  port: ${SOCLE_PORT:8081}
+
+### CUSTOM prop => CHANGE company with client name ###
+company:
+  context: "/" # nginx location prefix (empty on local)
+
+
+### DOC prop ###
+springdoc:
+  paths-to-match: /**
+  api-docs:
+    path: "docs/api-docs"
+    enabled: true
+  swagger-ui:
+    path: "/docs/swagger-ui.html"
+    url: "${company.context}${springdoc.api-docs.path}"
+    configUrl: "${company.context}${springdoc.api-docs.path}/swagger-config"
+    disable-swagger-default-url: true
+    operationsSorter: alpha
+    tagsSorter: alpha
+
