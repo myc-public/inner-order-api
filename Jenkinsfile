@@ -2,12 +2,11 @@ pipeline {
     agent {
         kubernetes {
             cloud 'openshift'
-            yamlFile 'https://raw.githubusercontent.com/myc-public/jenkins-platform/main/agents/java/pod-template.yaml'
+            inheritFrom 'java-maven'
             agentContainer 'maven'
             agentInjection true
         }
     }
-
     options {
         timestamps()
         timeout(time: 10, unit: 'MINUTES')
