@@ -1,4 +1,4 @@
-# company-ma-inner-api-socle
+inner-api-socle
 A template for backend microservices
 
 
