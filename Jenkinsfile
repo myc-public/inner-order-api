@@ -40,8 +40,12 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=inner-order-api'
+                 withSonarQubeEnv('sonarqube') {
+                      sh '''
+                          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                              -Dsonar.organization=myc-public \
+                              -Dsonar.projectKey=myc-public_inner-order-api
+                      '''
                 }
             }
         }
