@@ -20,32 +20,14 @@ pipeline {
             }
         }
 
-        stage('Validate') {
+        stage('Build, Test & SonarCloud Analysis') {
             steps {
-                sh 'mvn validate'
-            }
-        }
-
-        stage('Compile') {
-            steps {
-                sh 'mvn compile'
-            }
-        }
-
-        stage('Unit Tests') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                 withSonarQubeEnv('sonarqube') {
-                      sh '''
-                          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-                              -Dsonar.organization=myc-public \
-                              -Dsonar.projectKey=myc-public_inner-order-api
-                      '''
+                withSonarQubeEnv('sonarqube') {
+                    sh '''
+                        mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar \
+                            -Dsonar.organization=myc-public \
+                            -Dsonar.projectKey=myc-public_inner-order-api
+                    '''
                 }
             }
         }
@@ -58,9 +40,9 @@ pipeline {
             }
         }
 
-        stage('Package') {
+        stage('Archive Artifact') {
             steps {
-                sh 'mvn package -DskipTests'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
     }
