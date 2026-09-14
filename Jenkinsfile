@@ -29,18 +29,10 @@ pipeline {
     stages {
 
 
-        stage('Init environment') {
+        stage('Workspace Cleanup') {
             steps {
                 echo 'Nettoyage du workspace avant build'
                 deleteDir()
-                script {
-                    def props = readProperties file: jenkinsProperties
-                    APPLICATION_NAME    = props["application.name"]?.trim()
-                    APPLICATION_GROUPID = props["application.groupId"]?.trim()
-                    GIT_REPO            = props["git.url"]?.trim()
-                    NOTIFICATION_MAIL   = props["notification.email"]?.trim()
-                    GIT_BRANCH          = params.BRANCH
-                }
             }
         }
 
@@ -48,9 +40,6 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    echo "Repo (jenkins.properties) : ${GIT_REPO}"
-                    echo "Branche demandée (paramètre BRANCH) : ${GIT_BRANCH}"
-
                     def POM = readMavenPom file: 'pom.xml'
                     VERSION = "${POM.version}"
                     echo "Version (pom.xml) : ${VERSION}"
@@ -60,6 +49,21 @@ pipeline {
                     if (params.BRANCH != 'main' && !isSnapshotVersion) {
                         error("RELEASEs should only be built from the main branch, please update the pom's version to be a SNAPSHOT")
                     }
+                }
+            }
+        }
+
+        stage('Init environment') {
+            steps {
+                script {
+                    def props = readProperties file: jenkinsProperties
+                    APPLICATION_NAME    = props["application.name"]?.trim()
+                    APPLICATION_GROUPID = props["application.groupId"]?.trim()
+                    GIT_REPO            = props["git.url"]?.trim()
+                    NOTIFICATION_MAIL   = props["notification.email"]?.trim()
+                    GIT_BRANCH          = params.BRANCH
+                    echo "Repo (jenkins.properties) : ${GIT_REPO}"
+                    echo "Branche demandée (paramètre BRANCH) : ${GIT_BRANCH}"
                 }
             }
         }
