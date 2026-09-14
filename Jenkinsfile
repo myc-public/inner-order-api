@@ -4,6 +4,7 @@ final jenkinsProperties = 'cicd/jenkins.properties'
 APPLICATION_NAME = ""
 APPLICATION_GROUPID = ""
 GIT_REPO = ""
+NOTIFICATION_MAIL = ""
 
 pipeline {
     agent {
@@ -27,20 +28,17 @@ pipeline {
 
     stages {
 
-        stage('Workspace Cleanup') {
-            steps {
-                echo 'Nettoyage du workspace avant build'
-                deleteDir()
-            }
-        }
 
         stage('Init environment') {
             steps {
+                echo 'Nettoyage du workspace avant build'
+                deleteDir()
                 script {
                     def props = readProperties file: jenkinsProperties
                     APPLICATION_NAME    = props["application.name"]?.trim()
                     APPLICATION_GROUPID = props["application.groupId"]?.trim()
                     GIT_REPO            = props["git.url"]?.trim()
+                    NOTIFICATION_MAIL   = props["notification.email"]?.trim()
                     GIT_BRANCH          = params.BRANCH
                 }
             }
@@ -164,19 +162,43 @@ timestamp=${buildTimestamp}
             deleteDir()
         }
         success {
-            echo """
-            ================================================================
-            Notification BUILD (email) DESACTIVEE pour l'instant.
-            Pre-requis avant activation (meme logique que le stage Tagging) :
-              1. Choisir le canal (email vs Slack/Teams) avec l'equipe
-              2. Definir la liste de diffusion / verifier le plugin mailer sur Jenkins
-              3. Ajouter notification.email dans cicd/jenkins.properties
-              4. Remplacer cet echo par un step 'mail to: ..., subject: ..., body: ...'
-            ================================================================
-            """
+            script {
+                if (NOTIFICATION_MAIL) {
+                    mail to: NOTIFICATION_MAIL,
+                         subject: "[${APPLICATION_NAME}] BUILD SUCCESS #${env.BUILD_NUMBER} (${params.BRANCH})",
+                         body: """\
+Build reussi.
+
+Application : ${APPLICATION_NAME}
+Branche     : ${params.BRANCH}
+Version     : ${VERSION}
+Build       : ${env.BUILD_NUMBER}
+Commit      : ${env.GIT_COMMIT}
+URL         : ${env.BUILD_URL}
+"""
+                } else {
+                    echo "Notification email non envoyee : notification.email n'est pas renseigne dans cicd/jenkins.properties."
+                }
+            }
         }
         failure {
-            echo "Notification BUILD (email) DESACTIVEE pour l'instant - voir stage post{success} pour les pre-requis."
+            script {
+                if (NOTIFICATION_MAIL) {
+                    mail to: NOTIFICATION_MAIL,
+                         subject: "[${APPLICATION_NAME}] BUILD FAILURE #${env.BUILD_NUMBER} (${params.BRANCH})",
+                         body: """\
+Le build a echoue.
+
+Application : ${APPLICATION_NAME}
+Branche     : ${params.BRANCH}
+Build       : ${env.BUILD_NUMBER}
+Commit      : ${env.GIT_COMMIT}
+Logs        : ${env.BUILD_URL}console
+"""
+                } else {
+                    echo "Notification email non envoyee : notification.email n'est pas renseigne dans cicd/jenkins.properties."
+                }
+            }
         }
     }
 }
