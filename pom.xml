@@ -8,11 +8,11 @@
         <version>4.0.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>ma.company.inner.socle</groupId>
-    <artifactId>company-ma-inner-api-socle</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>company-ma-inner-api-socle</name>
-    <description>company-ma-inner-api-socle</description>
+    <groupId>ma.myc</groupId>
+    <artifactId>inner-order-api</artifactId>
+    <version>0.1.1-SNAPSHOT</version>
+    <name>inner-order-api</name>
+    <description>socle pour inner microservice </description>
     <url/>
     <licenses>
         <license/>
