@@ -168,9 +168,10 @@ timestamp=${buildTimestamp}
         success {
             script {
                 if (NOTIFICATION_MAIL) {
-                    mail to: NOTIFICATION_MAIL,
-                         subject: "[${APPLICATION_NAME}] BUILD SUCCESS #${env.BUILD_NUMBER} (${params.BRANCH})",
-                         body: """\
+                    try {
+                        mail to: NOTIFICATION_MAIL,
+                             subject: "[${APPLICATION_NAME}] BUILD SUCCESS #${env.BUILD_NUMBER} (${params.BRANCH})",
+                             body: """\
 Build reussi.
 
 Application : ${APPLICATION_NAME}
@@ -180,6 +181,9 @@ Build       : ${env.BUILD_NUMBER}
 Commit      : ${env.GIT_COMMIT}
 URL         : ${env.BUILD_URL}
 """
+                    } catch (Exception e) {
+                        echo "Envoi du mail de notification impossible (SMTP non configure sur Jenkins ?) : ${e.getMessage()}"
+                    }
                 } else {
                     echo "Notification email non envoyee : notification.email n'est pas renseigne dans cicd/jenkins.properties."
                 }
@@ -188,9 +192,10 @@ URL         : ${env.BUILD_URL}
         failure {
             script {
                 if (NOTIFICATION_MAIL) {
-                    mail to: NOTIFICATION_MAIL,
-                         subject: "[${APPLICATION_NAME}] BUILD FAILURE #${env.BUILD_NUMBER} (${params.BRANCH})",
-                         body: """\
+                    try {
+                        mail to: NOTIFICATION_MAIL,
+                             subject: "[${APPLICATION_NAME}] BUILD FAILURE #${env.BUILD_NUMBER} (${params.BRANCH})",
+                             body: """\
 Le build a echoue.
 
 Application : ${APPLICATION_NAME}
@@ -199,6 +204,9 @@ Build       : ${env.BUILD_NUMBER}
 Commit      : ${env.GIT_COMMIT}
 Logs        : ${env.BUILD_URL}console
 """
+                    } catch (Exception e) {
+                        echo "Envoi du mail de notification impossible (SMTP non configure sur Jenkins ?) : ${e.getMessage()}"
+                    }
                 } else {
                     echo "Notification email non envoyee : notification.email n'est pas renseigne dans cicd/jenkins.properties."
                 }
