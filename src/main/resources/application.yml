@@ -1,5 +1,5 @@
 server:
-  port: ${SOCLE_PORT:8081}
+  port: ${ORDER_PORT:8081}
 
 ### CUSTOM prop => CHANGE company with client name ###
 company:
