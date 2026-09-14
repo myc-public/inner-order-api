@@ -27,6 +27,13 @@ pipeline {
 
     stages {
 
+        stage('Workspace Cleanup') {
+            steps {
+                echo 'Nettoyage du workspace avant build'
+                deleteDir()
+            }
+        }
+
         stage('Init environment') {
             steps {
                 script {
@@ -59,10 +66,30 @@ pipeline {
             }
         }
 
+        stage('Toolchain Validation') {
+            steps {
+                script {
+                    def javaVersionOutput = sh(script: 'java -version 2>&1', returnStdout: true).trim()
+                    echo javaVersionOutput
+                    def allowedJavaVersions = ['"17.', '"21.']
+                    if (!allowedJavaVersions.any { javaVersionOutput.contains(it) }) {
+                        error("Java 17 ou 21 requis - version detectee: ${javaVersionOutput.readLines()[0]}")
+                    }
+
+                    def mvnVersionOutput = sh(script: 'mvn --version', returnStdout: true).trim()
+                    echo mvnVersionOutput
+                }
+            }
+        }
+
         stage('Build project') {
             steps {
-                sh 'mvn --version'
                 sh 'mvn clean verify -batch-mode'
+            }
+            post {
+                always {
+                    junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true
+                }
             }
         }
 
@@ -110,12 +137,46 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
+
+        stage('Publish Metadata') {
+            steps {
+                script {
+                    def buildTimestamp = sh(script: 'date -u +%Y-%m-%dT%H:%M:%SZ', returnStdout: true).trim()
+                    def buildInfo = """\
+commit=${env.GIT_COMMIT}
+branch=${params.BRANCH}
+version=${VERSION}
+buildNumber=${env.BUILD_NUMBER}
+buildUrl=${env.BUILD_URL}
+timestamp=${buildTimestamp}
+"""
+                    writeFile file: 'build-info.txt', text: buildInfo
+                    echo buildInfo
+                }
+                archiveArtifacts artifacts: 'build-info.txt', fingerprint: true
+            }
+        }
     }
 
     post {
         always {
             echo 'clean up our workspace'
             deleteDir()
+        }
+        success {
+            echo """
+            ================================================================
+            Notification BUILD (email) DESACTIVEE pour l'instant.
+            Pre-requis avant activation (meme logique que le stage Tagging) :
+              1. Choisir le canal (email vs Slack/Teams) avec l'equipe
+              2. Definir la liste de diffusion / verifier le plugin mailer sur Jenkins
+              3. Ajouter notification.email dans cicd/jenkins.properties
+              4. Remplacer cet echo par un step 'mail to: ..., subject: ..., body: ...'
+            ================================================================
+            """
+        }
+        failure {
+            echo "Notification BUILD (email) DESACTIVEE pour l'instant - voir stage post{success} pour les pre-requis."
         }
     }
 }
