@@ -11,7 +11,7 @@
     <groupId>ma.myc</groupId>
     <artifactId>inner-order-api</artifactId>
     <version>0.1.1-SNAPSHOT</version>
-    <name>inner-order-api</name>pl
+    <name>inner-order-api</name>
     <description>socle pour inner microservice </description>
     <url/>
     <licenses>
